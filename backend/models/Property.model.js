@@ -49,10 +49,10 @@ const propertySchema = new mongoose.Schema({
 });
 
 // ****** ADD TEXT INDEX for searching title, description, and address ******
-propertySchema.index({
-  title: 'text',
-  description: 'text',
-  address: 'text'
-});
+// propertySchema.index({
+//   title: 'text',
+//   description: 'text',
+//   address: 'text'
+// });
 
-module.exports = mongoose.model('Property', propertySchema);
+module.exports = mongoose.model('Property');
