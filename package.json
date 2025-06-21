@@ -8,9 +8,11 @@
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
-  "keywords": [],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": "18.x"
+  },
   "dependencies": {
     "@azure/storage-blob": "^12.27.0",
     "@gltf-transform/core": "^4.1.4",
