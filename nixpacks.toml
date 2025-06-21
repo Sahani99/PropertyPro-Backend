@@ -1,0 +1,11 @@
+[phases.setup]
+nixpkgs = ["nodejs-18_x"]
+
+[phases.build]
+cmds = [
+  "rm -rf node_modules",
+  "npm ci"
+]
+
+[start]
+cmd = "npm start"
