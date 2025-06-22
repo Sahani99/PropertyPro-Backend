@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 
 const propertySchema = new mongoose.Schema({
@@ -9,4 +8,4 @@ const propertySchema = new mongoose.Schema({
     // Add other fields as needed
 });
 
-module.exports = mongoose.model(propertySchema);
+module.exports = mongoose.model('Property', propertySchema);
