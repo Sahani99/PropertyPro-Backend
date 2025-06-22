@@ -55,4 +55,4 @@ const propertySchema = new mongoose.Schema({
 //   address: 'text'
 // });
 
-module.exports = mongoose.model('Property');
+module.exports = mongoose.model('Property', propertySchema);

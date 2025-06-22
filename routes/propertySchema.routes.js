@@ -1,7 +1,7 @@
 // routes/propertyRoutes.js
 const express = require('express');
 const router = express.Router();
-const Property = require('../models/propertySchema'); // Adjust path if needed
+const Property = require('../models/Property.model'); // Use the unified Property model
 
 // @desc    Get one property by ID
 // @route   GET /api/properties/:id
