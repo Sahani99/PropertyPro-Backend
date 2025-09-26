@@ -1,59 +1,86 @@
-// server.js
 const express = require('express');
+const http = require('http');
+const { Server } = require("socket.io");
 const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 
-// --- IMPORT ROUTE FILES ---
-const propertyRoutes = require('./routes/property.routes'); // Assuming you have this
-const userRoutes = require('./routes/user.routes');
-//const authRoutes = require('./routes/auth.routes'); // We'll create this for clarity
-
-// Initialize Express app
 const app = express();
+const server = http.createServer(app);
 
-// Middleware
-app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Allow requests from your Vite dev server
+// --- Socket.io Setup ---
+const io = new Server(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     credentials: true
+  }
+});
+app.set('io', io); // Make 'io' accessible in controllers
+
+// --- Middleware ---
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true
 }));
-app.use(express.json()); // To parse JSON request bodies
+app.use(express.json());
 
 // --- Database Connection ---
 const MONGODB_URI = process.env.MONGODB_URI;
-
 mongoose.connect(MONGODB_URI)
-    .then(() => {
-        console.log('MongoDB Connected Successfully!');
-    })
-    .catch(err => {
-        console.error('MongoDB Connection Error:', err.message);
-        process.exit(1);
-    });
+  .then(() => console.log('MongoDB Connected Successfully!'))
+  .catch(err => {
+    console.error('MongoDB Connection Error:', err.message);
+    process.exit(1);
+  });
+
+// --- IMPORT ROUTE FILES ---
+// User-facing / Public routes
+const authRoutes = require('./routes/auth.routes');
+const propertyRoutes = require('./routes/property.routes');
+const auctionRoutes = require('./routes/auction.routes');
+const visitRequestRoutes = require('./routes/visitRequests.routes');
+const futureProjectRoutes = require('./routes/futureProject.routes');
+const profileRoutes = require('./routes/profile.routes');
+
+// Admin routes
+const adminRoutes = require('./routes/admin.routes');
+
+// ✅ NEW: Notification route
+const notificationRoutes = require('./routes/Notification.routes');
 
 // --- API ROUTES ---
-app.get('/', (req, res) => {
-    res.json({ message: 'Welcome to the Real Estate API!' });
-});
+app.get('/api', (req, res) => res.json({ message: 'PropertyPro API is operational' }));
 
-// It's often good practice to have a dedicated /api/auth route for login/register
-// but given your current user.routes.js, we'll stick to /api/users for login/register
-// and add /api/auth for /me if we make auth.routes.js
+app.use('/api/auth', authRoutes);
+app.use('/api/properties', propertyRoutes);
+app.use('/api/auctions', auctionRoutes);
+app.use('/api/visit-requests', visitRequestRoutes);
+app.use('/api/future-projects', futureProjectRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/admin', adminRoutes);
 
-app.use('/api/properties', propertyRoutes); // Assuming this exists
-app.use('/api/users', userRoutes);  
-      // For register, login (as per your original user.routes) and potentially all users
-// If you want a separate /auth for /me:
-// app.use('/api/auth', authRoutes); // For /me route
+// ✅ Mount Notification Route
+app.use('/api/notifications', notificationRoutes);
 
-// --- Error Handling Middleware (Optional but good practice) ---
+// --- Error Handling Middleware ---
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Something broke!');
+  console.error("GLOBAL ERROR HANDLER:", err.name, err.message);
+  console.error(err.stack);
+  res.status(500).json({ message: 'Internal Server Error' });
 });
+
+require('./scheduler'); 
 
 // --- Start the Server ---
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+const PORT = process.env.PORT || 8080;
+server.listen(PORT, () => {
+  console.log(`Backend server with Socket.IO running on http://localhost:${PORT}`);
+});
+
+// --- Socket.IO Connection Handler ---
+io.on('connection', (socket) => {
+  console.log('Socket.IO client connected:', socket.id);
+  socket.on('disconnect', () => {
+    console.log('Socket.IO client disconnected:', socket.id);
+  });
 });

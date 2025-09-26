@@ -1,5 +1,6 @@
 // models/Property.model.js
 const mongoose = require('mongoose');
+const auctionSchema = require('./Auction.model');
 
 const propertySchema = new mongoose.Schema({
   title: {
@@ -18,6 +19,12 @@ const propertySchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  district: {
+    type: String,
+    trim: true
+    // You could use an enum here to restrict to valid Sri Lankan districts
+    // enum: ['Colombo', 'Gampaha', 'Kalutara', ...etc]
+  },
   area: { // You can filter by area range too
     type: Number,
     required: true
@@ -34,25 +41,29 @@ const propertySchema = new mongoose.Schema({
   },
   propertyType: { // For filtering by type
     type: String,
-    enum: ['house', 'apartment'],
+    enum: ['house', 'apartment', 'hotel', 'land'],
     default: 'house'
   },
   status: { // Could also be a filter if needed
     type: String,
-    enum: ['for sale', 'sold', 'pending'],
+    enum: ['for sale', 'sold', 'not started'],
     default: 'for sale'
   },
   dateAdded: { // For sorting
     type: Date,
     default: Date.now
+  },
+  auction: {
+    type: auctionSchema,
+    default: undefined
   }
 });
 
 // ****** ADD TEXT INDEX for searching title, description, and address ******
-// propertySchema.index({
-//   title: 'text',
-//   description: 'text',
-//   address: 'text'
-// });
+propertySchema.index({
+  title: 'text',
+  description: 'text',
+  address: 'text'
+});
 
 module.exports = mongoose.model('Property', propertySchema);
